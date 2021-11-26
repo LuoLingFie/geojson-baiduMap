@@ -4,9 +4,7 @@
     <div class="hortcutBar">
       <!-- 导入JSON文件 -->
       <div class="importJSON">
-        <el-button type="success" @click="importJSON" round
-          >导入JSON文件</el-button
-        >
+        <el-button type="success" @click="importJSON" round>导入JSON文件</el-button>
         <input v-show="false" id="file" type="file" accept=".json" />
       </div>
       <!-- 添加规划名 -->
@@ -14,32 +12,18 @@
         <span>规划名:</span>
         <el-input v-model="lineName" placeholder="请输入规划名"></el-input>
         <span>创建规划:</span>
-        <el-button
-          @click="addLine"
-          type="success"
-          icon="el-icon-plus"
-          circle
-        ></el-button>
+        <el-button @click="addLine" type="success" icon="el-icon-plus" circle></el-button>
       </div>
       <!-- 开启关闭地图绘制功能 -->
       <div class="drawLine">
         <span>规划列表：</span>
-        <el-switch
-          v-model="drawLine"
-          active-color="#13ce66"
-          inactive-color="#999"
-        >
+        <el-switch v-model="drawLine" active-color="#13ce66" inactive-color="#999">
         </el-switch>
       </div>
       <!-- 开启关闭地图绘制功能 -->
       <div class="drawLine">
         <span>鼠标喵点：</span>
-        <el-switch
-          v-model="lineMiao"
-          @change="lineMiaoFn"
-          active-color="#13ce66"
-          inactive-color="#999"
-        >
+        <el-switch v-model="lineMiao" @change="lineMiaoFn" active-color="#13ce66" inactive-color="#999">
         </el-switch>
       </div>
       <!-- 显示隐藏 规划列表 -->
@@ -48,13 +32,10 @@
         <strong>{{ theCurrent.name }}</strong>
         <p>ID:</p>
         <span>
-          {{ theCurrent.index !== null ? theCurrent.index + 1 : "" }}</span
-        >
+          {{ theCurrent.index !== null ? theCurrent.index + 1 : "" }}</span>
       </div>
       <!-- 导出JSON文件 -->
-      <el-button type="success" class="exportJSON" @click="exportJSON" round
-        >导出JSON文件</el-button
-      >
+      <el-button type="success" class="exportJSON" @click="exportJSON" round>导出JSON文件</el-button>
     </div>
     <!-- 规划列表 -->
     <div :class="{ showright: !drawLine }" class="plalistBox">
@@ -63,62 +44,25 @@
           <ul class="plalistBox-list">
             <li v-for="(item, index) in pointArr" :key="index">
               <p>{{ item.name }}</p>
-              <el-tooltip
-                class="item"
-                effect="dark"
-                content="编辑折点线"
-                placement="top-start"
-              >
-                <el-button
-                  @click="theEditor(index, 1)"
-                  :plain="true"
-                  type="primary"
-                  icon="el-icon-edit-outline"
-                ></el-button>
-              </el-tooltip>
-              <el-tooltip
-                class="item"
-                effect="dark"
-                content="取消编辑折点线"
-                placement="top-start"
-              >
-                <el-button
-                  @click="theEditor(index, 0)"
-                  :plain="true"
-                  type="success"
-                  icon="el-icon-document-checked"
-                ></el-button>
-              </el-tooltip>
-              <el-tooltip
-                class="item"
-                effect="dark"
-                content="查看当前规划坐标"
-                placement="top-start"
-              >
-                <el-button
-                  :plain="true"
-                  type="info"
-                  icon="el-icon-folder-opened"
-                  @click="showlineJson"
-                ></el-button>
-              </el-tooltip>
+              <el-button @click="theEditor(index, 1)" v-show="switchBtn.index==nill&&!switchBtn.off" :plain="true"
+                type="primary">
+                开折点
+              </el-button>
+              <el-button @click="theEditor(index, 0)" v-show="switchBtn.index==index&&switchBtn.off" :plain="true"
+                type="info">
+                关折点
+              </el-button>
+              <el-button :plain="true" type="success" @click="showlineJson">查坐标</el-button>
             </li>
           </ul>
         </el-tab-pane>
         <el-tab-pane label="无" name="second">无</el-tab-pane>
       </el-tabs>
     </div>
-    <el-dialog
-      title="当前规划坐标"
-      :visible.sync="activeNameShow"
-      width="30%"
-      center
-    >
+    <el-dialog title="当前规划坐标" :visible.sync="activeNameShow" width="30%" center>
       <span>{{ content }}</span>
       <span slot="footer" class="dialog-footer">
-        <el-button type="primary" @click="activeNameShow = false"
-          >确 定</el-button
-        >
+        <el-button type="primary" @click="activeNameShow = false">确 定</el-button>
       </span>
     </el-dialog>
     <!-- 地图 -->
@@ -146,6 +90,10 @@ export default {
       content: "", // 单独坐标
       lineName: "", // 规划线的名称
       activeName: "first", // tab栏当前页
+      switchBtn: {
+        index: null,
+        off: false
+      }, // 编辑折点线
       theCurrent: {
         index: null,
         name: "",
@@ -157,7 +105,7 @@ export default {
     newBmap() {
       let _this = this;
       // 创建地图 并且 设置定位
-      var map = new BMap.Map("allmap");
+      var map = new BMap.Map("allmap", { enableMapClick: false });
       new BMap.LocalCity().get((result) => {
         map.centerAndZoom(result.center, 15);
         map.enableScrollWheelZoom();
@@ -182,7 +130,7 @@ export default {
               }
             ); // 初始化PointCollection
             _this.PointCollectionArr.push(pointCollection);
-            pointCollection.addEventListener("click", function (e) {});
+            pointCollection.addEventListener("click", function (e) { });
             map.addOverlay(pointCollection); // 添加Overlay
             //  添加点 添加点
             // }
@@ -219,11 +167,7 @@ export default {
     // 创建规划百度实例
     newPolyline(arr) {
       arr.forEach((item) => {
-        let pts = [];
-        item.points.forEach((v, i) => {
-          pts.push(new BMap.Point(v.lng, v.lat));
-        });
-        let polyline = new BMap.Polyline(pts, {
+        let polyline = new BMap.Polyline(item.points, {
           strokeColor: "blue",
           strokeWeight: 3,
           strokeOpacity: 1,
@@ -235,10 +179,12 @@ export default {
     // 开启关闭当规划编辑
     theEditor(index, bur) {
       this.lineMiaoFn(false); // 取消鼠标喵点
+      this.switchBtn.index = index
       if (bur) {
+        this.switchBtn.off = true;
         this.theCurrent.name = this.pointArr[index].name;
         this.theCurrent.index = index;
-        let yunBd = this.PolylineArr[index].Ao;
+        let yunBd = this.PolylineArr[index].ha || this.PolylineArr[index].Ao;
         if (yunBd) {
           let num = yunBd.length;
           if (num) {
@@ -272,12 +218,17 @@ export default {
           });
         }
       } else {
+        this.switchBtn = {
+          index: null,
+          off: false
+        }
         this.PolylineArr[index].disableEditing();
       }
     },
     // 查看单独坐标数据
     showlineJson() {
-      let yunBd = this.PolylineArr[this.theCurrent.index].Ao;
+      const Target = this.PolylineArr[this.theCurrent.index]
+      let yunBd = Target.ha || Target.Ao;
       if (yunBd) {
         this.lineMiaoFn(false); // 取消鼠标喵点
         this.activeNameShow = true;
@@ -292,15 +243,25 @@ export default {
     exportJSON() {
       this.lineMiaoFn(false); // 取消鼠标喵点
       if (this.pointArr.length) {
-        let yunBd = this.PolylineArr[0].Ao;
+        let yunBd = this.PolylineArr[0].ha || this.PolylineArr[0].Ao;
         if (yunBd) {
           this.PolylineArr.forEach((item, ind) => {
-            this.pointArr[ind].points = item.Ao;
+            this.pointArr[ind].points = item.ha || item.Ao;
           });
           // 将json转换成字符串
           let data = JSON.stringify(this.pointArr);
           let blob = new Blob([data], { type: "" });
-          FileSaver.saveAs(blob, "BmapYX.json");
+          let myDate = new Date();
+          let YY = myDate.getFullYear();
+          let MM = myDate.getMonth() + 1;
+          if (MM < 10) MM = `0${MM}`;
+          let dd = myDate.getDate();
+          if (dd < 10) dd = `0${dd}`;
+          let h = myDate.getHours();
+          if (h < 10) h = `0${h}`;
+          let m = myDate.getMinutes();
+          if (m < 10) m = `0${m}`;
+          FileSaver.saveAs(blob, `行政区规划 ${YY}${MM}${dd}${h}${m}.json`);
           this.$notify({
             message: "导出成功！",
             type: "success",
@@ -331,12 +292,30 @@ export default {
           reader.onload = function () {
             _this.map.clearOverlays(); // 清除所有的撒点
             // this.result为读取到的json字符串，需转成json对象
-            _this.pointArr = JSON.parse(this.result);
-            _this.newPolyline(JSON.parse(this.result));
-            _this.$notify({
-              message: "导入成功！",
-              type: "success",
-            });
+            let jsonData = JSON.parse(this.result);
+            if (Array.isArray(jsonData)) {
+              const NewJsonData = jsonData.map((item) => {
+                if (item.points && Array.isArray(item.points)) {
+                  let pts = [];
+                  item.points.forEach((v, i) => {
+                    pts.push(new BMap.Point(v.lng, v.lat));
+                  });
+                  item.points = pts;
+                } else item.points = [];
+                return item;
+              });
+              _this.pointArr = NewJsonData;
+              _this.newPolyline(NewJsonData);
+              _this.$notify({
+                message: "导入成功！",
+                type: "success",
+              });
+            } else {
+              this.$notify({
+                message: "您导入到JSON文件无效！",
+                type: "warning",
+              });
+            }
           };
         };
         // 模拟input点击事件
@@ -396,6 +375,13 @@ export default {
 };
 </script>
 
+<style lang="less">
+.hello {
+  .plalistBox .el-tabs__content {
+    height: calc(100% - 55px);
+  }
+}
+</style>
 <!-- Add "scoped" attribute to limit CSS to this component only -->
 <style scoped lang="less">
 .hello,
@@ -482,7 +468,7 @@ export default {
     right: 10px;
     top: 60px;
     z-index: 999;
-    height: 600px;
+    height: calc(95% - 50px);
     width: 300px;
     box-shadow: -8px 8px 5px rgba(0, 0, 0, 0.4);
     background-color: #fff;
@@ -490,24 +476,31 @@ export default {
     &.showright {
       right: -320px;
     }
+    > div {
+      height: 100%;
+      .el-tabs__content {
+      }
+    }
     .plalistBox-list {
       overflow: auto;
-      height: 525px;
+      // height: 525px;
       li {
         border-bottom: 1px solid gainsboro;
         box-sizing: border-box;
         padding: 5px 0;
+        display: flex;
         p {
+          flex: 1;
           color: cadetblue;
           display: inline-block;
-          width: 100px;
           white-space: nowrap;
           overflow: hidden;
           text-overflow: ellipsis;
         }
         button {
-          width: 20px;
-          height: 30px;
+          padding: 5px;
+          // width: 20px;
+          // height: 30px;
         }
       }
       &::-webkit-scrollbar {
